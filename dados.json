@@ -1,0 +1,19 @@
+{
+  "demonstracao": true,
+  "atualizadoEm": "2026-10-08",
+  "observacao": "Dados inteiramente fictícios para demonstração de interface e interações. Não representam dados oficiais do ICMBio.",
+  "ucs": [
+    {"id":1,"nome":"UC Demonstrativa Amazônia A","cnuc":"DEMO-001","categoria":"PARNA","grupo":"Proteção Integral","bioma":"Amazônia","gr":"GR1 Norte","plano":true,"area":950000,"lat":-3.5,"lon":-61.0,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":2,"nome":"UC Demonstrativa Amazônia B","cnuc":"DEMO-002","categoria":"RESEX","grupo":"Uso Sustentável","bioma":"Amazônia","gr":"GR1 Norte","plano":false,"area":450000,"lat":-6.0,"lon":-65.2,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":3,"nome":"UC Demonstrativa Cerrado A","cnuc":"DEMO-003","categoria":"PARNA","grupo":"Proteção Integral","bioma":"Cerrado","gr":"GR3 Centro-Oeste","plano":true,"area":225000,"lat":-14.4,"lon":-47.5,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":4,"nome":"UC Demonstrativa Cerrado B","cnuc":"DEMO-004","categoria":"APA","grupo":"Uso Sustentável","bioma":"Cerrado","gr":"GR3 Centro-Oeste","plano":false,"area":185000,"lat":-16.2,"lon":-49.2,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":5,"nome":"UC Demonstrativa Caatinga A","cnuc":"DEMO-005","categoria":"ESEC","grupo":"Proteção Integral","bioma":"Caatinga","gr":"GR4 Nordeste","plano":true,"area":120000,"lat":-8.9,"lon":-40.2,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":6,"nome":"UC Demonstrativa Caatinga B","cnuc":"DEMO-006","categoria":"FLONA","grupo":"Uso Sustentável","bioma":"Caatinga","gr":"GR4 Nordeste","plano":false,"area":76000,"lat":-6.8,"lon":-39.0,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":7,"nome":"UC Demonstrativa Mata Atlântica A","cnuc":"DEMO-007","categoria":"PARNA","grupo":"Proteção Integral","bioma":"Mata Atlântica","gr":"GR5 Sul-Sudeste","plano":true,"area":92000,"lat":-22.8,"lon":-44.6,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":8,"nome":"UC Demonstrativa Mata Atlântica B","cnuc":"DEMO-008","categoria":"APA","grupo":"Uso Sustentável","bioma":"Mata Atlântica","gr":"GR5 Sul-Sudeste","plano":true,"area":135000,"lat":-26.1,"lon":-48.7,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":9,"nome":"UC Demonstrativa Pantanal A","cnuc":"DEMO-009","categoria":"PARNA","grupo":"Proteção Integral","bioma":"Pantanal","gr":"GR3 Centro-Oeste","plano":false,"area":165000,"lat":-17.7,"lon":-56.7,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":10,"nome":"UC Demonstrativa Pampa A","cnuc":"DEMO-010","categoria":"REBIO","grupo":"Proteção Integral","bioma":"Pampa","gr":"GR5 Sul-Sudeste","plano":true,"area":56000,"lat":-30.1,"lon":-53.3,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":11,"nome":"UC Demonstrativa Área Marinha A","cnuc":"DEMO-011","categoria":"RESEX","grupo":"Uso Sustentável","bioma":"Área Marinha","gr":"GR4 Nordeste","plano":true,"area":315000,"lat":-4.2,"lon":-36.0,"site":"","planoUrl":"","portariaUrl":""},
+    {"id":12,"nome":"UC Demonstrativa Área Marinha B","cnuc":"DEMO-012","categoria":"APA","grupo":"Uso Sustentável","bioma":"Área Marinha","gr":"GR5 Sul-Sudeste","plano":false,"area":240000,"lat":-24.2,"lon":-44.1,"site":"","planoUrl":"","portariaUrl":""}
+  ]
+}
