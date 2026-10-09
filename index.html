@@ -261,15 +261,17 @@ function renderHistory(){
  if(typeof echarts==='undefined')return;
  const base=rows.filter(r=>Number.isFinite(r.ano));
  const creation=historyCreation.filter(c=>(!el('histUC').value||c.nome===el('histUC').value)&&(!el('histCategoria').value||data.some(u=>u.nome===c.nome&&u.categoria===el('histCategoria').value))&&(!el('histBioma').value||data.some(u=>u.nome===c.nome&&u.bioma===el('histBioma').value))&&(!el('histGR').value||data.some(u=>u.nome===c.nome&&u.gr===el('histGR').value)));
- const allYears=[...base.map(r=>r.ano),...creation.map(c=>c.ano),2007,2026];
+ const cumulativeBase=historyRows.filter(r=>Number.isFinite(r.ano));
+ const cumulativeCreation=historyCreation;
+ const allYears=[...cumulativeBase.map(r=>r.ano),...cumulativeCreation.map(c=>c.ano),2007,2026];
  const start=Math.min(...allYears),end=Math.max(...allYears);
  const xs=Array.from({length:end-start+1},(_,i)=>start+i);
  const kinds=base.map(r=>({...r,kind:historyDemandKind(r)}));
  const elaborations=xs.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='elaboracao').length);
  const general=xs.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='geral').length);
  const punctual=xs.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='pontual').length);
- const cumulativePM=xs.map(y=>new Set(kinds.filter(r=>r.ano<=y&&r.kind==='elaboracao').map(r=>r.nome)).size);
- const cumulativeUC=xs.map(y=>creation.filter(c=>c.ano<=y).length);
+ const cumulativePM=xs.map(y=>new Set(cumulativeBase.filter(r=>r.ano<=y&&historyDemandKind(r)==='elaboracao').map(r=>r.nome)).size);
+ const cumulativeUC=xs.map(y=>cumulativeCreation.filter(c=>c.ano<=y).length);
  // A média anual inclui os anos sem publicações, de 2007 até o ano corrente da base.
  const annualEnd=Math.max(2007,Math.min(2026,Math.max(...base.map(r=>r.ano),2007)));
  const totalProduction=kinds.filter(r=>r.ano>=2007&&r.ano<=annualEnd&&['elaboracao','geral','pontual'].includes(r.kind)).length;
@@ -281,7 +283,7 @@ function renderHistory(){
  const chart1=histCharts.cum||(histCharts.cum=echarts.init(el('histCumulative')));
  chart1.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Elaboração de Planos de Manejo (acumulado)','Criação de UCs federais (acumulado)']},grid:{left:48,right:22,top:68,bottom:46},xAxis:{type:'category',data:xs.map(String),axisLabel:{hideOverlap:true}},yAxis:{type:'value',min:0},series:[
  {name:'Elaboração de Planos de Manejo (acumulado)',type:'bar',data:cumulativePM,itemStyle:{color:'#238be9'},barMaxWidth:20},
- {name:'Criação de UCs federais (acumulado)',type:'line',data:cumulativeUC,smooth:false,symbol:'none',lineStyle:{width:2,color:'#182d9e'},areaStyle:{color:'rgba(24,45,158,.12)'},itemStyle:{color:'#182d9e'},markLine:{silent:true,symbol:'none',label:{show:true,formatter:'Criação do ICMBio\n2007',position:'insideEndTop',color:'#bf3445',fontWeight:'bold',fontSize:11},lineStyle:{color:'#f05a65',width:2,type:'solid'},data:[{xAxis:'2007'}]}}
+ {name:'Criação de UCs federais (acumulado)',type:'line',data:cumulativeUC,smooth:false,symbol:'none',lineStyle:{width:2,color:'#182d9e'},areaStyle:{color:'rgba(24,45,158,.12)'},itemStyle:{color:'#182d9e'},markLine:{silent:true,symbol:'none',label:{show:true,formatter:'Criação do ICMBio — 2007',position:'insideEndTop',rotate:0,offset:[79,-17],backgroundColor:'rgba(255,255,255,.94)',padding:[3,5],color:'#bf3445',fontWeight:'bold',fontSize:11},lineStyle:{color:'#f05a65',width:2,type:'solid'},data:[{xAxis:'2007'}]}}
  ]},true);
  const chart2=histCharts.annual||(histCharts.annual=echarts.init(el('histAnnual')));
  const label={show:true,position:'inside',color:'#fff',fontSize:10,fontWeight:'bold',formatter:p=>p.value>0?String(p.value):''};
