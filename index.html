@@ -158,7 +158,7 @@
 <div class="filter"><label for="histGR">GR</label><select id="histGR" onchange="renderHistory()"></select></div>
 <div class="filter"><label for="histAno">Ano</label><select id="histAno" onchange="renderHistory()"></select></div></div>
 <div class="panel"><div class="table-top"><div><h3>Publicações dos Planos de Manejo</h3><p class="sub" id="histCount">Elaborações e revisões em uma única tabela</p></div><input class="search" id="histSearch" placeholder="Pesquisar publicação..." oninput="renderHistory()" aria-label="Pesquisar publicações"></div><div class="history-table-wrap"><table class="data-table history-table"><thead><tr><th>UC</th><th>Plano de Manejo (versão)</th><th>Tipo de demanda</th><th>Ano da publicação</th><th>Nº do processo SEI</th><th>Link da portaria</th></tr></thead><tbody id="histTbody"></tbody></table></div><p class="sub" style="margin-top:10px">Cada publicação corresponde a uma linha. A mesma UC pode aparecer em diferentes versões ou demandas.</p></div><div class="history-charts-layout"><div class="panel"><h3>Acumulado Elaboração Planos de manejo X Criação de UCs</h3><p class="sub">Evolução acumulada da elaboração de Planos de Manejo e da criação das UCs</p><div id="histCumulative" class="history-plot"></div></div>
-<div class="panel"><h3>Produções por ano</h3><p class="sub">Elaborações, revisões gerais e revisões pontuais por ano de publicação</p><div class="history-kpi"><strong id="histMean">—</strong><span class="sub">Média de produções por ano desde 2007<br><span class="history-pill">Inclui anos sem publicações</span></span></div><div id="histAnnual" class="history-plot short"></div></div>
+<div class="panel"><h3>Produções por ano</h3><p class="sub">Elaborações, revisões gerais e revisões pontuais por ano de publicação</p><div class="history-kpi"><strong id="histMean">—</strong><span class="sub">Média de produções por ano desde 2007</span></div><div id="histAnnual" class="history-plot short"></div></div>
 </div></div></div><div id="future" class="hidden panel placeholder"><h2 id="futureTitle"></h2><p>Estrutura reservada para a próxima etapa de desenvolvimento. Os indicadores, gráficos, tabelas e medidas serão implementados com base nas suas regras e nos dados fornecidos.</p><div class="notice">Esta página ainda não contém dados reais nem resultados oficiais.</div></div><footer class="footer"><div><strong>COMAN</strong><p>Coordenação de Planos de Manejo de Unidades de Conservação</p><p>Contato: coman.diman@icmbio.gov.br</p></div><div><strong>Painéis integrados da COMAN</strong><p>Protótipo não oficial • Dados demonstrativos</p></div></footer></section></main>
 <div class="modal-backdrop hidden" id="modal" onclick="if(event.target===this)closeGuide()"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" onclick="closeGuide()" aria-label="Fechar">✕</button><h2 id="modalTitle"></h2><div id="modalContent"></div></div></div>
 <script>
@@ -274,17 +274,21 @@ function renderHistory(){
  const annualEnd=Math.max(2007,Math.min(2026,Math.max(...base.map(r=>r.ano),2007)));
  const totalProduction=kinds.filter(r=>r.ano>=2007&&r.ano<=annualEnd&&['elaboracao','geral','pontual'].includes(r.kind)).length;
  el('histMean').textContent=(totalProduction/(annualEnd-2007+1)).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+ const annualYears=Array.from({length:Math.max(2026,annualEnd)-2007+1},(_,i)=>2007+i);
+ const annualElaborations=annualYears.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='elaboracao').length);
+ const annualGeneral=annualYears.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='geral').length);
+ const annualPunctual=annualYears.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='pontual').length);
  const chart1=histCharts.cum||(histCharts.cum=echarts.init(el('histCumulative')));
- chart1.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Elaboração de Planos de Manejo (acumulado)','Criação de UCs federais (acumulado)']},grid:{left:48,right:22,top:68,bottom:46},xAxis:{type:'category',data:xs,axisLabel:{hideOverlap:true}},yAxis:{type:'value',min:0},series:[
+ chart1.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Elaboração de Planos de Manejo (acumulado)','Criação de UCs federais (acumulado)']},grid:{left:48,right:22,top:68,bottom:46},xAxis:{type:'category',data:xs.map(String),axisLabel:{hideOverlap:true}},yAxis:{type:'value',min:0},series:[
  {name:'Elaboração de Planos de Manejo (acumulado)',type:'bar',data:cumulativePM,itemStyle:{color:'#238be9'},barMaxWidth:20},
- {name:'Criação de UCs federais (acumulado)',type:'line',data:cumulativeUC,smooth:false,symbol:'none',lineStyle:{width:2,color:'#182d9e'},areaStyle:{color:'rgba(24,45,158,.12)'},itemStyle:{color:'#182d9e'},markLine:{silent:true,symbol:'none',label:{show:true,formatter:'Criação do ICMBio\n2007',position:'insideEndTop',color:'#bf3445',fontWeight:'bold',fontSize:11},lineStyle:{color:'#f05a65',width:2,type:'solid'},data:[{xAxis:2007}]}}
+ {name:'Criação de UCs federais (acumulado)',type:'line',data:cumulativeUC,smooth:false,symbol:'none',lineStyle:{width:2,color:'#182d9e'},areaStyle:{color:'rgba(24,45,158,.12)'},itemStyle:{color:'#182d9e'},markLine:{silent:true,symbol:'none',label:{show:true,formatter:'Criação do ICMBio\n2007',position:'insideEndTop',color:'#bf3445',fontWeight:'bold',fontSize:11},lineStyle:{color:'#f05a65',width:2,type:'solid'},data:[{xAxis:'2007'}]}}
  ]},true);
  const chart2=histCharts.annual||(histCharts.annual=echarts.init(el('histAnnual')));
  const label={show:true,position:'inside',color:'#fff',fontSize:10,fontWeight:'bold',formatter:p=>p.value>0?String(p.value):''};
- chart2.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Planos Elaborados','Revisões gerais','Revisões pontuais']},grid:{left:40,right:12,top:60,bottom:40},xAxis:{type:'category',data:xs,axisLabel:{hideOverlap:true}},yAxis:{type:'value',minInterval:1},series:[
- {name:'Planos Elaborados',type:'bar',stack:'publicacoes',data:elaborations,itemStyle:{color:'#208cf0'},barMaxWidth:28,label},
- {name:'Revisões gerais',type:'bar',stack:'publicacoes',data:general,itemStyle:{color:'#172b99'},barMaxWidth:28,label},
- {name:'Revisões pontuais',type:'bar',stack:'publicacoes',data:punctual,itemStyle:{color:'#8b58cb'},barMaxWidth:28,label}
+ chart2.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Planos Elaborados','Revisões gerais','Revisões pontuais']},grid:{left:40,right:12,top:60,bottom:40},xAxis:{type:'category',data:annualYears.map(String),axisLabel:{interval:2,hideOverlap:true}},yAxis:{type:'value',minInterval:1},series:[
+ {name:'Planos Elaborados',type:'bar',stack:'publicacoes',data:annualElaborations,itemStyle:{color:'#208cf0'},barMaxWidth:42,barMinWidth:12,label},
+ {name:'Revisões gerais',type:'bar',stack:'publicacoes',data:annualGeneral,itemStyle:{color:'#172b99'},barMaxWidth:42,barMinWidth:12,label},
+ {name:'Revisões pontuais',type:'bar',stack:'publicacoes',data:annualPunctual,itemStyle:{color:'#8b58cb'},barMaxWidth:42,barMinWidth:12,label}
  ]},true);
  chart1.resize();chart2.resize();
 }
