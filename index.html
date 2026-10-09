@@ -75,7 +75,7 @@
 
 /* Histórico: mesma linguagem visual do Panorama */
 .history-filters{display:grid;grid-template-columns:auto repeat(5,minmax(125px,1fr));gap:12px;align-items:end;margin:18px 0 20px;padding:18px;background:#fff;border:1px solid var(--line);border-radius:16px}
-.history-filters .filter{min-width:0}.history-layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:18px;margin-top:18px}.history-plot{height:370px;width:100%}.history-plot.short{height:320px}.history-table-wrap{max-height:480px;overflow:auto}.history-table{min-width:820px}.history-table td{vertical-align:top}.history-table a{white-space:nowrap}.history-kpi{display:flex;align-items:center;gap:14px;margin:14px 0}.history-kpi strong{font-size:28px;color:var(--navy)}.history-pill{font-size:11px;border-radius:30px;padding:5px 9px;background:#e8efff;color:#0754ca;white-space:nowrap}.history-legend{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0;font-size:12px;color:var(--muted)}.history-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+.history-filters .filter{min-width:0}.history-layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:18px;margin-top:18px}.history-plot{height:370px;width:100%}.history-plot.short{height:320px}.history-table-wrap{max-height:480px;overflow:auto}.history-table{min-width:820px}.history-table td{vertical-align:top}.history-table a{white-space:nowrap}.history-kpi{display:flex;align-items:center;gap:14px;margin:14px 0}.history-kpi strong{font-size:28px;color:var(--navy)}.history-pill{font-size:11px;border-radius:30px;padding:5px 9px;background:#e8efff;color:#0754ca;white-space:nowrap}.history-legend{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0;font-size:12px;color:var(--muted)}.history-version{display:inline-flex;align-items:center;padding:5px 9px;border-radius:7px;font-weight:700;font-size:11px;white-space:nowrap}.history-version.first{background:#fff2bd;color:#775600}.history-version.latest{background:#dcf6e7;color:#116b3a}.history-version.middle{background:#e8eef9;color:#345075}.history-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
 @media(max-width:1100px){.history-filters{grid-template-columns:repeat(3,minmax(0,1fr))}.history-layout{grid-template-columns:1fr}}@media(max-width:640px){.history-filters{grid-template-columns:1fr 1fr}.history-plot{height:300px}}
 
 /* Histórico: tabela junto aos filtros, gráficos abaixo */
@@ -157,8 +157,8 @@
 <div class="filter"><label for="histBioma">Bioma</label><select id="histBioma" onchange="renderHistory()"></select></div>
 <div class="filter"><label for="histGR">GR</label><select id="histGR" onchange="renderHistory()"></select></div>
 <div class="filter"><label for="histAno">Ano</label><select id="histAno" onchange="renderHistory()"></select></div></div>
-<div class="panel"><div class="table-top"><div><h3>Publicações dos Planos de Manejo</h3><p class="sub" id="histCount">Elaborações e revisões em uma única tabela</p></div><input class="search" id="histSearch" placeholder="Pesquisar publicação..." oninput="renderHistory()" aria-label="Pesquisar publicações"></div><div class="history-table-wrap"><table class="data-table history-table"><thead><tr><th>UC</th><th>Plano de Manejo (versão)</th><th>Tipo de demanda</th><th>Ano da publicação</th><th>Nº do processo SEI</th><th>Link da portaria</th></tr></thead><tbody id="histTbody"></tbody></table></div><p class="sub" style="margin-top:10px">Cada publicação corresponde a uma linha. A mesma UC pode aparecer em diferentes versões ou demandas.</p></div><div class="history-charts-layout"><div class="panel"><h3>Acumulado Elaboração Planos de manejo X Criação de UCs</h3><p class="sub">Evolução acumulada das primeiras publicações de Planos de Manejo e da criação das UCs</p><div id="histCumulative" class="history-plot"></div></div>
-<div class="panel"><h3>Produções por ano</h3><p class="sub">Planos elaborados e revisados por ano de publicação</p><div class="history-kpi"><strong id="histMean">—</strong><span class="sub">Média de planos elaborados e revisados por ano<br><span class="history-pill">No intervalo com publicações</span></span></div><div id="histAnnual" class="history-plot short"></div></div>
+<div class="panel"><div class="table-top"><div><h3>Publicações dos Planos de Manejo</h3><p class="sub" id="histCount">Elaborações e revisões em uma única tabela</p></div><input class="search" id="histSearch" placeholder="Pesquisar publicação..." oninput="renderHistory()" aria-label="Pesquisar publicações"></div><div class="history-table-wrap"><table class="data-table history-table"><thead><tr><th>UC</th><th>Plano de Manejo (versão)</th><th>Tipo de demanda</th><th>Ano da publicação</th><th>Nº do processo SEI</th><th>Link da portaria</th></tr></thead><tbody id="histTbody"></tbody></table></div><p class="sub" style="margin-top:10px">Cada publicação corresponde a uma linha. A mesma UC pode aparecer em diferentes versões ou demandas.</p></div><div class="history-charts-layout"><div class="panel"><h3>Acumulado Elaboração Planos de manejo X Criação de UCs</h3><p class="sub">Evolução acumulada da elaboração de Planos de Manejo e da criação das UCs</p><div id="histCumulative" class="history-plot"></div></div>
+<div class="panel"><h3>Produções por ano</h3><p class="sub">Elaborações, revisões gerais e revisões pontuais por ano de publicação</p><div class="history-kpi"><strong id="histMean">—</strong><span class="sub">Média de produções por ano desde 2007<br><span class="history-pill">Inclui anos sem publicações</span></span></div><div id="histAnnual" class="history-plot short"></div></div>
 </div></div></div><div id="future" class="hidden panel placeholder"><h2 id="futureTitle"></h2><p>Estrutura reservada para a próxima etapa de desenvolvimento. Os indicadores, gráficos, tabelas e medidas serão implementados com base nas suas regras e nos dados fornecidos.</p><div class="notice">Esta página ainda não contém dados reais nem resultados oficiais.</div></div><footer class="footer"><div><strong>COMAN</strong><p>Coordenação de Planos de Manejo de Unidades de Conservação</p><p>Contato: coman.diman@icmbio.gov.br</p></div><div><strong>Painéis integrados da COMAN</strong><p>Protótipo não oficial • Dados demonstrativos</p></div></footer></section></main>
 <div class="modal-backdrop hidden" id="modal" onclick="if(event.target===this)closeGuide()"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" onclick="closeGuide()" aria-label="Fechar">✕</button><h2 id="modalTitle"></h2><div id="modalContent"></div></div></div>
 <script>
@@ -236,18 +236,56 @@ function initHistoryData(json){
 function clearHistoryFilters(){['histUC','histCategoria','histBioma','histGR','histAno'].forEach(id=>el(id).value='');el('histSearch').value='';renderHistory()}
 function historyFiltered(){let q=el('histSearch').value.toLocaleLowerCase('pt-BR').trim();return historyRows.filter(r=>(!el('histUC').value||r.nome===el('histUC').value)&&(!el('histCategoria').value||r.categoria===el('histCategoria').value)&&(!el('histBioma').value||r.bioma===el('histBioma').value)&&(!el('histGR').value||r.gr===el('histGR').value)&&(!el('histAno').value||String(r.ano)===el('histAno').value)&&(!q||[r.nome,r.versao,r.tipo,r.ano,r.sei].some(v=>String(v??'').toLocaleLowerCase('pt-BR').includes(q))))}
 function safePublicationLink(url){if(!url)return '—';try{let u=new URL(url,location.href);if(!['https:','http:'].includes(u.protocol))return '—';return `<a href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">Abrir documento ↗</a>`}catch{return '—'}}
-function renderHistory(){if(!el('histTbody'))return;let rows=historyFiltered().sort((a,b)=>(b.ano||0)-(a.ano||0)||a.nome.localeCompare(b.nome,'pt-BR'));
+function historyDemandKind(r){
+ const t=String(r.tipo||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ if(t.includes('zona de amortecimento')||t==='za'||t.includes('elaboracao za'))return 'za';
+ if(t.includes('pontual'))return 'pontual';
+ if(t.includes('revis'))return 'geral';
+ if(t.includes('elabora'))return 'elaboracao';
+ return 'outro';
+}
+function renderHistory(){
+ if(!el('histTbody'))return;
+ const rows=historyFiltered().sort((a,b)=>(b.ano||0)-(a.ano||0)||a.nome.localeCompare(b.nome,'pt-BR'));
  el('histCount').textContent=`${rows.length} publicação(ões) encontrada(s)`;
- el('histTbody').innerHTML=rows.map(r=>`<tr><td>${esc(r.nome)}</td><td>${esc(r.versao||'—')}</td><td>${esc(r.tipo||'—')}</td><td>${Number.isFinite(r.ano)?r.ano:'—'}</td><td>${esc(r.sei||'—')}</td><td>${safePublicationLink(r.portaria)}</td></tr>`).join('')||'<tr><td colspan="6">Nenhuma publicação encontrada.</td></tr>';
+ // A versão mais recente é identificada entre todas as publicações da UC,
+ // mesmo quando os filtros ocultam outras versões.
+ const newest=new Map();
+ historyRows.forEach(r=>{const k=r.nome;const old=newest.get(k);if(!old||Number(r.ano)>Number(old.ano)||(Number(r.ano)===Number(old.ano)&&Number(r.id)>Number(old.id)))newest.set(k,r)});
+ el('histTbody').innerHTML=rows.map(r=>{
+   const vers=String(r.versao||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+   const first=/^(1[ªaºo]?|primeira|1\s*versao)/.test(vers);
+   const cls=newest.get(r.nome)===r?'latest':first?'first':'middle';
+   return `<tr><td>${esc(r.nome)}</td><td><span class="history-version ${cls}">${esc(r.versao||'—')}</span></td><td>${esc(r.tipo||'—')}</td><td>${Number.isFinite(r.ano)?r.ano:'—'}</td><td>${esc(r.sei||'—')}</td><td>${safePublicationLink(r.portaria)}</td></tr>`;
+ }).join('')||'<tr><td colspan="6">Nenhuma publicação encontrada.</td></tr>';
  if(typeof echarts==='undefined')return;
- const base=rows.filter(r=>Number.isFinite(r.ano)),creation=historyCreation.filter(c=>(!el('histUC').value||c.nome===el('histUC').value)&&(!el('histCategoria').value||data.some(u=>u.nome===c.nome&&u.categoria===el('histCategoria').value))&&(!el('histBioma').value||data.some(u=>u.nome===c.nome&&u.bioma===el('histBioma').value))&&(!el('histGR').value||data.some(u=>u.nome===c.nome&&u.gr===el('histGR').value)));
- const years=[...new Set([...base.map(r=>r.ano),...creation.map(c=>c.ano)])].sort((a,b)=>a-b);let start=years[0]||2000,end=years[years.length-1]||2026;let xs=Array.from({length:Math.max(1,end-start+1)},(_,i)=>start+i);
- const isElab=r=>String(r.tipo).toLocaleLowerCase('pt-BR').includes('elabora')&&!String(r.tipo).includes('ZA');
- const elaborations=xs.map(y=>base.filter(r=>r.ano===y&&isElab(r)).length),revisions=xs.map(y=>base.filter(r=>r.ano===y&&!isElab(r)).length);
- const cumulativePM=xs.map(y=>new Set(base.filter(r=>r.ano<=y&&isElab(r)).map(r=>r.nome)).size),cumulativeUC=xs.map(y=>creation.filter(c=>c.ano<=y).length);
- let activeYears=xs.filter(y=>base.some(r=>r.ano===y));el('histMean').textContent=activeYears.length?(base.length/activeYears.length).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
- const chart1=histCharts.cum||(histCharts.cum=echarts.init(el('histCumulative')));chart1.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Elaboração de Planos de Manejo (acumulado)','Criação de UCs federais (acumulado)']},grid:{left:48,right:22,top:65,bottom:46},xAxis:{type:'category',data:xs,axisLabel:{hideOverlap:true}},yAxis:{type:'value',min:0},series:[{name:'Elaboração de Planos de Manejo (acumulado)',type:'bar',data:cumulativePM,itemStyle:{color:'#238be9'},barMaxWidth:20},{name:'Criação de UCs federais (acumulado)',type:'line',data:cumulativeUC,smooth:.15,symbol:'none',lineStyle:{width:2,color:'#182d9e'},areaStyle:{color:'rgba(24,45,158,.12)'},itemStyle:{color:'#182d9e'},markLine:{silent:true,symbol:'none',label:{formatter:'Criação ICMBio (2007)',position:'insideEndTop'},lineStyle:{color:'#f05a65',width:1},data:[{xAxis:2007}]}}]});
- const chart2=histCharts.annual||(histCharts.annual=echarts.init(el('histAnnual')));chart2.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Planos Elaborados','Planos Revisados / ZA']},grid:{left:40,right:12,top:56,bottom:40},xAxis:{type:'category',data:xs,axisLabel:{hideOverlap:true}},yAxis:{type:'value',minInterval:1},series:[{name:'Planos Elaborados',type:'bar',stack:'publicacoes',data:elaborations,itemStyle:{color:'#208cf0'},barMaxWidth:27,label:{show:true,position:'inside',formatter:p=>p.value?p.value:''}},{name:'Planos Revisados / ZA',type:'bar',stack:'publicacoes',data:revisions,itemStyle:{color:'#172b99'},label:{show:true,position:'inside',formatter:p=>p.value?p.value:''}}]});
+ const base=rows.filter(r=>Number.isFinite(r.ano));
+ const creation=historyCreation.filter(c=>(!el('histUC').value||c.nome===el('histUC').value)&&(!el('histCategoria').value||data.some(u=>u.nome===c.nome&&u.categoria===el('histCategoria').value))&&(!el('histBioma').value||data.some(u=>u.nome===c.nome&&u.bioma===el('histBioma').value))&&(!el('histGR').value||data.some(u=>u.nome===c.nome&&u.gr===el('histGR').value)));
+ const allYears=[...base.map(r=>r.ano),...creation.map(c=>c.ano),2007,2026];
+ const start=Math.min(...allYears),end=Math.max(...allYears);
+ const xs=Array.from({length:end-start+1},(_,i)=>start+i);
+ const kinds=base.map(r=>({...r,kind:historyDemandKind(r)}));
+ const elaborations=xs.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='elaboracao').length);
+ const general=xs.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='geral').length);
+ const punctual=xs.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='pontual').length);
+ const cumulativePM=xs.map(y=>new Set(kinds.filter(r=>r.ano<=y&&r.kind==='elaboracao').map(r=>r.nome)).size);
+ const cumulativeUC=xs.map(y=>creation.filter(c=>c.ano<=y).length);
+ // A média anual inclui os anos sem publicações, de 2007 até o ano corrente da base.
+ const annualEnd=Math.max(2007,Math.min(2026,Math.max(...base.map(r=>r.ano),2007)));
+ const totalProduction=kinds.filter(r=>r.ano>=2007&&r.ano<=annualEnd&&['elaboracao','geral','pontual'].includes(r.kind)).length;
+ el('histMean').textContent=(totalProduction/(annualEnd-2007+1)).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+ const chart1=histCharts.cum||(histCharts.cum=echarts.init(el('histCumulative')));
+ chart1.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Elaboração de Planos de Manejo (acumulado)','Criação de UCs federais (acumulado)']},grid:{left:48,right:22,top:68,bottom:46},xAxis:{type:'category',data:xs,axisLabel:{hideOverlap:true}},yAxis:{type:'value',min:0},series:[
+ {name:'Elaboração de Planos de Manejo (acumulado)',type:'bar',data:cumulativePM,itemStyle:{color:'#238be9'},barMaxWidth:20},
+ {name:'Criação de UCs federais (acumulado)',type:'line',data:cumulativeUC,smooth:false,symbol:'none',lineStyle:{width:2,color:'#182d9e'},areaStyle:{color:'rgba(24,45,158,.12)'},itemStyle:{color:'#182d9e'},markLine:{silent:true,symbol:'none',label:{show:true,formatter:'Criação do ICMBio\n2007',position:'insideEndTop',color:'#bf3445',fontWeight:'bold',fontSize:11},lineStyle:{color:'#f05a65',width:2,type:'solid'},data:[{xAxis:2007}]}}
+ ]},true);
+ const chart2=histCharts.annual||(histCharts.annual=echarts.init(el('histAnnual')));
+ const label={show:true,position:'inside',color:'#fff',fontSize:10,fontWeight:'bold',formatter:p=>p.value>0?String(p.value):''};
+ chart2.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Planos Elaborados','Revisões gerais','Revisões pontuais']},grid:{left:40,right:12,top:60,bottom:40},xAxis:{type:'category',data:xs,axisLabel:{hideOverlap:true}},yAxis:{type:'value',minInterval:1},series:[
+ {name:'Planos Elaborados',type:'bar',stack:'publicacoes',data:elaborations,itemStyle:{color:'#208cf0'},barMaxWidth:28,label},
+ {name:'Revisões gerais',type:'bar',stack:'publicacoes',data:general,itemStyle:{color:'#172b99'},barMaxWidth:28,label},
+ {name:'Revisões pontuais',type:'bar',stack:'publicacoes',data:punctual,itemStyle:{color:'#8b58cb'},barMaxWidth:28,label}
+ ]},true);
  chart1.resize();chart2.resize();
 }
 window.addEventListener('resize',()=>Object.values(histCharts).forEach(c=>c.resize()));
