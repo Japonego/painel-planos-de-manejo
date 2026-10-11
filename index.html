@@ -335,7 +335,7 @@ function initProcessData(json){
   if(Array.isArray(json.processos))processes=json.processos.map((p,i)=>({...p,id:p.id??i}));
   else if(json.demonstracao){let u=data.filter(x=>Number.isFinite(x.lat)&&Number.isFinite(x.lon));processes=u.slice(0,Math.min(12,u.length)).map((x,i)=>({...x,id:'exemplo-'+i,tipo:processTypes[i%4],etapa:['Planejamento','Organização','Diagnóstico','Consolidação','Análise técnica'][i%5]}));}
   else processes=[];
-  populateSelect('processUC',processes.map(x=>x.nome));populateSelect('processTipo',processes.map(x=>x.tipo));populateSelect('processEtapa',processes.map(x=>x.etapa));populateSelect('processBioma',processes.flatMap(x=>x.biomas||[x.bioma]));populateSelect('processGR',processes.map(x=>x.gr));
+  populateSelect('processUC',processes.map(x=>x.nome));populateSelect('processTipo',processes.map(x=>x.tipo));populateSelect('processEtapa',processes.map(x=>x.etapa));populateSelect('processBioma',processes.flatMap(x=>x.biomas||[x.bioma]));populateSelect('processGR',processes.map(x=>x.gr));setupProcessSlicers();
   el('processLegend').innerHTML=processTypes.map(t=>`<span><i style="background:${processColors[t]}"></i>${t}</span>`).join('');
 }
 function excelToProcesses(wb){
@@ -363,9 +363,36 @@ function excelToProcesses(wb){
  console.info('Elaboração/Revisão: processos ativos e vínculos UC',result.length,'Pendências',missing);
  return result;
 }
-function processFiltered(){let q=el('processSearch').value.trim().toLocaleLowerCase('pt-BR');return processes.filter(p=>(!el('processUC').value||p.nome===el('processUC').value)&&(!el('processTipo').value||p.tipo===el('processTipo').value)&&(!el('processEtapa').value||p.etapa===el('processEtapa').value)&&(!el('processBioma').value||(p.biomas||[p.bioma]).includes(el('processBioma').value))&&(!el('processGR').value||p.gr===el('processGR').value)&&(!selectedProcess||String(p.id)===String(selectedProcess))&&(!q||[p.nome,p.tipo,p.etapa,p.bioma,p.gr].some(v=>String(v??'').toLocaleLowerCase('pt-BR').includes(q))))}
+const processSlicerSelections=new Map();
+function processOptionMatches(id,values){const chosen=processSlicerSelections.get(id);return !chosen||!chosen.size||values.some(v=>chosen.has(String(v??'')))}
+function processFiltered(){let q=el('processSearch').value.trim().toLocaleLowerCase('pt-BR');return processes.filter(p=>processOptionMatches('processUC',[p.nome])&&processOptionMatches('processTipo',[p.tipo])&&processOptionMatches('processEtapa',[p.etapa])&&processOptionMatches('processBioma',p.biomas||[p.bioma])&&processOptionMatches('processGR',[p.gr])&&(!selectedProcess||String(p.id)===String(selectedProcess))&&(!q||[p.nome,p.tipo,p.etapa,p.bioma,p.gr].some(v=>String(v??'').toLocaleLowerCase('pt-BR').includes(q))))}
+function setupProcessSlicers(){
+ ['processUC','processTipo','processEtapa','processBioma','processGR'].forEach(id=>{
+  const sel=el(id);if(!sel)return;
+  const opts=[...sel.options].filter(o=>o.value).map(o=>({value:o.value,label:o.textContent}));
+  if(opts.length<=2)return; // mantém filtros binários no formato original
+  let selected=processSlicerSelections.get(id);if(!selected){selected=new Set();processSlicerSelections.set(id,selected)}
+  const previous=sel.previousElementSibling;
+  if(previous&&previous.classList.contains('bi-slicer'))previous.remove();
+  const wrap=document.createElement('div');wrap.className='bi-slicer';
+  const trigger=document.createElement('button');trigger.type='button';trigger.className='bi-slicer-trigger';trigger.textContent='Todos';trigger.setAttribute('aria-expanded','false');
+  const popup=document.createElement('div');popup.className='bi-slicer-popup';popup.hidden=true;
+  const search=document.createElement('input');search.type='search';search.className='bi-slicer-search';search.placeholder='⌕ Pesquisar';search.setAttribute('aria-label','Pesquisar opções de '+id);
+  const items=document.createElement('div');items.className='bi-slicer-items';popup.append(search,items);wrap.append(trigger,popup);sel.parentNode.insertBefore(wrap,sel);sel.classList.add('bi-native-hidden');
+  const normalize=v=>String(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
+  function paint(){const visible=opts.filter(o=>normalize(o.label).includes(normalize(search.value)));items.replaceChildren();
+   const all=document.createElement('label');all.className='bi-slicer-item';const allBox=document.createElement('input');allBox.type='checkbox';allBox.checked=selected.size===opts.length;allBox.indeterminate=selected.size>0&&selected.size<opts.length;const txt=document.createElement('span');txt.textContent='Selecionar tudo';all.append(allBox,txt);items.append(all);
+   allBox.addEventListener('change',()=>{selected.clear();if(allBox.checked)opts.forEach(o=>selected.add(o.value));update()});
+   visible.forEach(o=>{const line=document.createElement('label');line.className='bi-slicer-item';const cb=document.createElement('input');cb.type='checkbox';cb.checked=selected.has(o.value);const span=document.createElement('span');span.textContent=o.label;line.append(cb,span);items.append(line);cb.addEventListener('change',()=>{if(cb.checked)selected.add(o.value);else selected.delete(o.value);update()})});
+  }
+  function update(){trigger.textContent=selected.size===0||selected.size===opts.length?'Todos':selected.size===1?[...selected][0]:selected.size+' selecionados';trigger.title=trigger.textContent;paint();selectedProcess=null;renderProcesses()}
+  trigger.addEventListener('click',()=>{const opening=popup.hidden;document.querySelectorAll('.bi-slicer-popup').forEach(p=>p.hidden=true);popup.hidden=!opening;trigger.setAttribute('aria-expanded',String(opening));if(opening){paint();search.focus()}});
+  search.addEventListener('input',paint);wrap.refreshSlicer=()=>{selected.clear();search.value='';update()};paint();
+ });
+}
+
 function processFilterChanged(){selectedProcess=null;renderProcesses()}
-function clearProcessFilters(){['processUC','processTipo','processEtapa','processBioma','processGR','processSearch'].forEach(id=>el(id).value='');selectedProcess=null;renderProcesses()}
+function clearProcessFilters(){['processUC','processTipo','processEtapa','processBioma','processGR','processSearch'].forEach(id=>el(id).value='');processSlicerSelections.forEach(v=>v.clear());document.querySelectorAll('#processPage .bi-slicer').forEach(w=>{w.querySelector('.bi-slicer-search').value='';w.querySelector('.bi-slicer-trigger').textContent='Todos';w.querySelector('.bi-slicer-popup').hidden=true});selectedProcess=null;renderProcesses()}
 function initProcessMap(){if(!processMap&&window.L){processMap=L.map('processMap',{scrollWheelZoom:true}).setView([-13.5,-52.5],4);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(processMap)}requestAnimationFrame(()=>setTimeout(()=>{if(processMap)processMap.invalidateSize()},150))}
 function renderProcesses(){if(!el('processTbody'))return;let rows=processFiltered();el('processCount').textContent=`${new Set(rows.map(p=>p.pm_id||p.id)).size} processo(s) distinto(s) · ${rows.length} vínculo(s) com UC`;
   const counts=Object.fromEntries(processTypes.map(t=>[t,new Set(rows.filter(p=>p.tipo===t).map(p=>p.pm_id||p.id)).size]));
@@ -382,7 +409,9 @@ function renderProcesses(){if(!el('processTbody'))return;let rows=processFiltere
     requestAnimationFrame(()=>window.processDonutChart.resize());
   }
   const stageCounts=new Map();[...new Map(rows.map(p=>[p.pm_id||p.id,p])).values()].forEach(p=>{const etapa=String(p.etapa||'Não informada').trim()||'Não informada';stageCounts.set(etapa,(stageCounts.get(etapa)||0)+1)});
-  const stages=[...stageCounts.entries()].sort((a,b)=>{const n=x=>{const m=x.match(/^\s*(\d+)/);return m?Number(m[1]):999};return n(a[0])-n(b[0])||a[0].localeCompare(b[0],'pt-BR')});
+  const stageSequence=['Etapa preparatória','Organização do planejamento','Subsídios ao planejamento','Oficina do plano de manejo','Consolidação','Aprovação'];
+  const stageRank=label=>{const clean=String(label).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();const index=stageSequence.findIndex(x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===clean);return index<0?999:index};
+  const stages=[...stageCounts.entries()].sort((a,b)=>stageRank(a[0])-stageRank(b[0])||a[0].localeCompare(b[0],'pt-BR'));
   const max=Math.max(1,...stages.map(x=>x[1]));
   el('processBars').innerHTML=stages.length?stages.map(([etapa,n])=>`<div><div class="process-bar-head"><span>${esc(etapa)}</span><b>${n}</b></div><div class="process-bar-track"><div class="process-bar-fill" style="width:${100*n/max}%;background:#172c9f"></div></div></div>`).join(''):'<p class="sub">Nenhum processo encontrado.</p>';
   if(processMap){processMarkers.forEach(m=>processMap.removeLayer(m));processMarkers=[];rows.forEach(p=>{if(!Number.isFinite(Number(p.lat))||!Number.isFinite(Number(p.lon)))return;let m=L.circleMarker([Number(p.lat),Number(p.lon)],{radius:8,weight:2,color:'#fff',fillColor:processColors[p.tipo]||'#777',fillOpacity:.96}).addTo(processMap);m.bindPopup(`<b>${esc(p.nome)}</b><br>${esc(p.tipo)}<br>Etapa: ${esc(p.etapa||'Não informada')}`);m.on('click',()=>{selectedProcess=String(selectedProcess)===String(p.id)?null:String(p.id);renderProcesses()});processMarkers.push(m)});requestAnimationFrame(()=>processMap.invalidateSize())}
