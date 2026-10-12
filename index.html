@@ -123,6 +123,21 @@
 #processPage select.bi-native-hidden{display:none!important}
 #processPage .process-filters .bi-slicer{min-width:0;width:100%}
 #processPage .process-filters .bi-slicer-popup{z-index:10000}
+
+/* Histórico: mesmo padrão visual dos segmentadores do Panorama */
+#historyPage .bi-native-hidden{display:none!important}
+#historyPage .bi-slicer{position:relative;width:100%;min-width:0}
+#historyPage .bi-slicer-trigger{display:block;width:100%;min-height:40px;text-align:left;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:9px 32px 9px 12px;color:#263b5c;font:inherit;font-size:12px;cursor:pointer;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#historyPage .bi-slicer-trigger:after{content:'⌄';position:absolute;right:12px;top:5px;font-size:18px}
+#historyPage .bi-slicer-popup{position:absolute;top:calc(100% + 3px);left:0;z-index:10000;width:max(100%,270px);max-width:420px;background:#fff;border:1px solid #cbd5e1;border-radius:6px;box-shadow:0 8px 22px #162b4a30;padding:5px}
+#historyPage .bi-slicer-popup[hidden]{display:none!important}
+#historyPage .bi-slicer-search{display:block;width:100%;height:38px;border:0;border-bottom:1px solid #e2e8f0;border-radius:0;padding:8px 9px;font:inherit;font-size:12px;outline:none;box-shadow:none}
+#historyPage .bi-slicer-items{max-height:290px;overflow-y:auto;overflow-x:hidden}
+#historyPage .bi-slicer-item{display:flex;align-items:center;justify-content:flex-start;gap:9px;width:100%;margin:0;padding:7px 9px;font-size:12px;font-weight:400;line-height:1.35;white-space:normal;cursor:pointer;color:#1e293b}
+#historyPage .bi-slicer-item:hover{background:#edf4ff}
+#historyPage .bi-slicer-item input[type=checkbox]{display:block;width:14px!important;min-width:14px;max-width:14px;height:14px;margin:0;padding:0;border:0;flex:0 0 14px;accent-color:#2563eb;box-shadow:none}
+#historyPage .bi-slicer-item span{display:block;min-width:0;flex:1;overflow-wrap:break-word;text-align:left}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 <style>
@@ -601,13 +616,18 @@ function renderHistory(){
  {name:'Criação de UCs federais (acumulado)',type:'line',data:cumulativeUC,smooth:false,symbol:'none',lineStyle:{width:2,color:'#182d9e'},areaStyle:{color:'rgba(24,45,158,.12)'},itemStyle:{color:'#182d9e'},markLine:{silent:true,symbol:'none',label:{show:true,formatter:'Criação do ICMBio — 2007',position:'insideEndTop',rotate:0,offset:[79,-17],backgroundColor:'rgba(255,255,255,.94)',padding:[3,5],color:'#bf3445',fontWeight:'bold',fontSize:11},lineStyle:{color:'#f05a65',width:2,type:'solid'},data:[{xAxis:'2007'}]}}
  ]},true);
  const chart2=histCharts.annual||(histCharts.annual=echarts.init(el('histAnnual')));
+ const prevLegend=chart2.getOption()?.legend?.[0]?.selected||{};
+ if(!histCharts.annualLegendBound){
+   chart2.on('legendselectchanged',()=>updateHistoryMean(chart2));
+   histCharts.annualLegendBound=true;
+ }
  const label={show:true,position:'inside',color:'#fff',fontSize:10,fontWeight:'bold',formatter:p=>p.value>0?String(p.value):''};
  chart2.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Planos Elaborados','Revisões'],selected:prevLegend},grid:{left:40,right:12,top:60,bottom:40},xAxis:{type:'category',data:annualYears.map(String),axisLabel:{interval:2,hideOverlap:true}},yAxis:{type:'value',minInterval:1},series:[
  {name:'Planos Elaborados',type:'bar',stack:'publicacoes',data:annualElaborations,itemStyle:{color:'#208cf0'},barMaxWidth:42,barMinWidth:12,label},
  {name:'Revisões',type:'bar',stack:'publicacoes',data:annualGeneral,itemStyle:{color:'#172b99'},barMaxWidth:42,barMinWidth:12,label},
 
  ]},true);
- chart1.resize();chart2.resize();
+ chart1.resize();chart2.resize();updateHistoryMean(chart2);
 }
 function updateHistoryMean(chart){
  const opts=chart.getOption();const active=opts?.legend?.[0]?.selected||{};
