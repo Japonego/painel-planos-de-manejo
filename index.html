@@ -261,7 +261,7 @@
 </div><div id="historyPage" class="hidden">
 <div class="notice">Histórico demonstrativo: os registros, anos, séries e vínculos desta versão são exemplos fictícios. A evolução histórica oficial será apresentada após a integração da base institucional.</div>
 <div class="history-charts-layout"><div class="panel"><h3>Acumulado Elaboração Planos de manejo X Criação de UCs</h3><p class="sub">Evolução acumulada da elaboração de Planos de Manejo e da criação das UCs</p><div id="histCumulative" class="history-plot"></div></div>
-<div class="panel"><h3>Produções por ano</h3><p class="sub">Elaborações, revisões gerais e revisões pontuais por ano de publicação</p><div class="history-kpi"><strong id="histMean">—</strong><span class="sub">Média de produções por ano desde 2007</span></div><div id="histAnnual" class="history-plot short"></div></div>
+<div class="panel"><h3>Produções por ano</h3><p class="sub">Elaborações e revisões por ano de conclusão (tipos não informados identificados separadamente)</p><div class="history-kpi"><strong id="histMean">—</strong><span class="sub">Média de produções por ano desde 2007</span></div><div id="histAnnual" class="history-plot short"></div></div>
 </div><div class="history-filters"><button class="reset" onclick="clearHistoryFilters()">↻ Limpar filtros</button>
 <div class="filter"><label for="histUC">Plano de Manejo</label><select id="histUC" onchange="renderHistory()"></select></div>
 <div class="filter"><label for="histCategoria">Categoria</label><select id="histCategoria" onchange="renderHistory()"></select></div>
@@ -492,6 +492,34 @@ function renderProcesses(){if(!el('processTbody'))return;let rows=processFiltere
 
 // Histórico: estrutura preparada para publicacoes[] e ucs[].anoCriacao em dados.json.
 let historyRows=[],historyCreation=[],histCharts={};
+function excelToHistory(wb){
+ const ucs=excelRows(wb,'Geral_uc'),rels=excelRows(wb,'dados_ucs_pms');
+ const raw=XLSX.utils.sheet_to_json(wb.Sheets['dados_pms'],{defval:'',raw:true});
+ const byC=new Map(ucs.map(u=>[keyCNUC(u.cnuc_id_2),u]));
+ const byPM=new Map();rels.forEach(r=>{const id=String(r.pm_id||'').trim(),cn=keyCNUC(r.cnuc_id);if(id&&cn&&byC.has(cn)){if(!byPM.has(id))byPM.set(id,new Set());byPM.get(id).add(cn)}});
+ const getYear=v=>{if(typeof v==='number'&&v>10000&&v<100000){const d=XLSX.SSF.parse_date_code(v);return d?d.y:NaN}if(v instanceof Date)return v.getFullYear();const m=String(v||'').match(/(?:19|20)\d{2}/);return m?Number(m[0]):NaN};
+ const clean=v=>{const t=String(v??'').trim();return !t||['na','n/a','null','none','undefined','-'].includes(norm(t))?'':t};
+ const rows=[];
+ raw.filter(p=>norm(p.status)==='concluido').forEach(p=>{
+   const id=String(p.pm_id||'').trim(),year=getYear(p.conclusao);if(!Number.isInteger(year)||year<1900||year>2100)return;
+   const code=clean(p.pm_codigo),vMatch=code.match(/-(\d{2})$/),version=vMatch?Number(vMatch[1]):null;
+   const dem=clean(p.demanda);const kind=norm(dem);
+   let tipo=dem;
+   if(!tipo){tipo=version===1?'Elaboração':version>1?'Revisão (tipo não informado)':'Não informado'}
+   const versao=version?version+'ª versão':clean(p.pm_nome_curto)||clean(p.pm)||'Versão não informada';
+   const linked=byPM.get(id)||new Set();
+   linked.forEach(cn=>{const u=byC.get(cn);const biomas=String(u.uc_biomas||'').split(';').map(v=>v.trim()).filter(Boolean);
+    rows.push({id:id+'-'+cn,pm_id:id,cnuc:cn,nome:String(u.uc||u['uc_nome-completo']||''),versao,tipo,ano:year,sei:clean(p.sei_no),portaria:clean(p.portaria_link),portariaNumero:clean(p.portaria),categoria:clean(u.uc_categoria),bioma:biomas[0]||'',biomas,gr:clean(u.uc_gr),tipoInferido:!dem});
+   });
+ });
+ const creation=ucs.map(u=>({nome:String(u.uc||''),cnuc:keyCNUC(u.cnuc_id_2),ano:Number(u['uc_criacao-ano'])})).filter(x=>Number.isInteger(x.ano)&&x.ano>=1900&&x.ano<=2100);
+ return {rows,creation,sourceCount:raw.filter(p=>norm(p.status)==='concluido').length};
+}
+function initRealHistory(wb){
+ const result=excelToHistory(wb);historyRows=result.rows;historyCreation=result.creation;
+ populateSelect('histUC',historyRows.map(x=>x.nome));populateSelect('histCategoria',historyRows.map(x=>x.categoria).filter(Boolean));populateSelect('histBioma',historyRows.flatMap(x=>x.biomas).filter(Boolean));populateSelect('histGR',historyRows.map(x=>x.gr).filter(Boolean));populateSelect('histAno',historyRows.map(x=>x.ano).filter(Number.isFinite).sort((a,b)=>a-b));
+ const notice=document.querySelector('#historyPage .notice');if(notice)notice.textContent='Histórico: publicações de Planos de Manejo concluídos, extraídas de dados_pm.xlsx. Quando a demanda histórica não está preenchida, a classificação é inferida pela versão (1ª elaboração; posteriores revisão sem tipo informado). Um plano compartilhado pode constar em mais de uma UC.';
+}
 function initHistoryData(json){
  if(Array.isArray(json.publicacoes))historyRows=json.publicacoes.map((r,i)=>({id:i,...r,nome:r.nome||r.uc||'',versao:r.versao||r.planoManejo||'',tipo:r.tipo||r.tipoDemanda||'',ano:Number(r.ano||r.anoPublicacao),sei:r.sei||r.processoSEI||'',portaria:r.portaria||r.linkPortaria||''}));
  else if(json.demonstracao){historyRows=[];data.forEach((u,i)=>{if(!u.plano)return;let ano=2009+(i*3)%17;historyRows.push({id:historyRows.length,nome:u.nome,versao:'1ª versão',tipo:'Elaboração',ano,sei:'',portaria:'',categoria:u.categoria,bioma:u.bioma,gr:u.gr});if(i%2===0)historyRows.push({id:historyRows.length,nome:u.nome,versao:'2ª versão',tipo:i%4===0?'Revisão geral':'Revisão pontual',ano:Math.min(2026,ano+5),sei:'',portaria:'',categoria:u.categoria,bioma:u.bioma,gr:u.gr})})}
@@ -501,12 +529,13 @@ function initHistoryData(json){
  populateSelect('histUC',historyRows.map(x=>x.nome));populateSelect('histCategoria',historyRows.map(x=>x.categoria).filter(Boolean));populateSelect('histBioma',historyRows.map(x=>x.bioma).filter(Boolean));populateSelect('histGR',historyRows.map(x=>x.gr).filter(Boolean));populateSelect('histAno',historyRows.map(x=>x.ano).filter(Number.isFinite).sort((a,b)=>a-b));
 }
 function clearHistoryFilters(){['histUC','histCategoria','histBioma','histGR','histAno'].forEach(id=>el(id).value='');el('histSearch').value='';renderHistory()}
-function historyFiltered(){let q=el('histSearch').value.toLocaleLowerCase('pt-BR').trim();return historyRows.filter(r=>(!el('histUC').value||r.nome===el('histUC').value)&&(!el('histCategoria').value||r.categoria===el('histCategoria').value)&&(!el('histBioma').value||r.bioma===el('histBioma').value)&&(!el('histGR').value||r.gr===el('histGR').value)&&(!el('histAno').value||String(r.ano)===el('histAno').value)&&(!q||[r.nome,r.versao,r.tipo,r.ano,r.sei].some(v=>String(v??'').toLocaleLowerCase('pt-BR').includes(q))))}
+function historyFiltered(){let q=el('histSearch').value.toLocaleLowerCase('pt-BR').trim();return historyRows.filter(r=>(!el('histUC').value||r.nome===el('histUC').value)&&(!el('histCategoria').value||r.categoria===el('histCategoria').value)&&(!el('histBioma').value||(r.biomas||[r.bioma]).includes(el('histBioma').value))&&(!el('histGR').value||r.gr===el('histGR').value)&&(!el('histAno').value||String(r.ano)===el('histAno').value)&&(!q||[r.nome,r.versao,r.tipo,r.ano,r.sei].some(v=>String(v??'').toLocaleLowerCase('pt-BR').includes(q))))}
 function safePublicationLink(url){if(!url)return '—';try{let u=new URL(url,location.href);if(!['https:','http:'].includes(u.protocol))return '—';return `<a href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">Abrir documento ↗</a>`}catch{return '—'}}
 function historyDemandKind(r){
  const t=String(r.tipo||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
  if(t.includes('zona de amortecimento')||t==='za'||t.includes('elaboracao za'))return 'za';
  if(t.includes('pontual'))return 'pontual';
+ if(t.includes('nao informado'))return 'revisao_indefinida';
  if(t.includes('revis'))return 'geral';
  if(t.includes('elabora'))return 'elaboracao';
  return 'outro';
@@ -527,26 +556,27 @@ function renderHistory(){
  }).join('')||'<tr><td colspan="6">Nenhuma publicação encontrada.</td></tr>';
  if(typeof echarts==='undefined')return;
  const base=rows.filter(r=>Number.isFinite(r.ano));
- const creation=historyCreation.filter(c=>(!el('histUC').value||c.nome===el('histUC').value)&&(!el('histCategoria').value||data.some(u=>u.nome===c.nome&&u.categoria===el('histCategoria').value))&&(!el('histBioma').value||data.some(u=>u.nome===c.nome&&u.bioma===el('histBioma').value))&&(!el('histGR').value||data.some(u=>u.nome===c.nome&&u.gr===el('histGR').value)));
+ const creation=historyCreation.filter(c=>(!el('histUC').value||c.nome===el('histUC').value)&&(!el('histCategoria').value||data.some(u=>u.nome===c.nome&&u.categoria===el('histCategoria').value))&&(!el('histBioma').value||data.some(u=>u.nome===c.nome&&(u.biomas||[u.bioma]).includes(el('histBioma').value)))&&(!el('histGR').value||data.some(u=>u.nome===c.nome&&u.gr===el('histGR').value)));
  const cumulativeBase=historyRows.filter(r=>Number.isFinite(r.ano));
  const cumulativeCreation=historyCreation;
- const allYears=[...cumulativeBase.map(r=>r.ano),...cumulativeCreation.map(c=>c.ano),2007,2026];
+ const allYears=[...cumulativeBase.map(r=>r.ano),...cumulativeCreation.map(c=>c.ano),2007,new Date().getFullYear()];
  const start=Math.min(...allYears),end=Math.max(...allYears);
  const xs=Array.from({length:end-start+1},(_,i)=>start+i);
- const kinds=base.map(r=>({...r,kind:historyDemandKind(r)}));
+ const kinds=[...new Map(base.map(r=>[r.pm_id||r.id,{...r,kind:historyDemandKind(r)}])).values()];
  const elaborations=xs.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='elaboracao').length);
  const general=xs.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='geral').length);
  const punctual=xs.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='pontual').length);
- const cumulativePM=xs.map(y=>new Set(cumulativeBase.filter(r=>r.ano<=y&&historyDemandKind(r)==='elaboracao').map(r=>r.nome)).size);
+ const cumulativePM=xs.map(y=>new Set(cumulativeBase.filter(r=>r.ano<=y).map(r=>r.cnuc||r.nome)).size);
  const cumulativeUC=xs.map(y=>cumulativeCreation.filter(c=>c.ano<=y).length);
  // A média anual inclui os anos sem publicações, de 2007 até o ano corrente da base.
- const annualEnd=Math.max(2007,Math.min(2026,Math.max(...base.map(r=>r.ano),2007)));
- const totalProduction=kinds.filter(r=>r.ano>=2007&&r.ano<=annualEnd&&['elaboracao','geral','pontual'].includes(r.kind)).length;
+ const annualEnd=Math.max(2007,Math.min(new Date().getFullYear(),Math.max(...base.map(r=>r.ano),2007)));
+ const totalProduction=kinds.filter(r=>r.ano>=2007&&r.ano<=annualEnd&&['elaboracao','geral','pontual','revisao_indefinida'].includes(r.kind)).length;
  el('histMean').textContent=(totalProduction/(annualEnd-2007+1)).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
- const annualYears=Array.from({length:Math.max(2026,annualEnd)-2007+1},(_,i)=>2007+i);
+ const annualYears=Array.from({length:Math.max(new Date().getFullYear(),annualEnd)-2007+1},(_,i)=>2007+i);
  const annualElaborations=annualYears.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='elaboracao').length);
  const annualGeneral=annualYears.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='geral').length);
  const annualPunctual=annualYears.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='pontual').length);
+ const annualUndefined=annualYears.map(y=>kinds.filter(r=>r.ano===y&&r.kind==='revisao_indefinida').length);
  const chart1=histCharts.cum||(histCharts.cum=echarts.init(el('histCumulative')));
  chart1.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Elaboração de Planos de Manejo (acumulado)','Criação de UCs federais (acumulado)']},grid:{left:48,right:22,top:68,bottom:46},xAxis:{type:'category',data:xs.map(String),axisLabel:{hideOverlap:true}},yAxis:{type:'value',min:0},series:[
  {name:'Elaboração de Planos de Manejo (acumulado)',type:'bar',data:cumulativePM,itemStyle:{color:'#238be9'},barMaxWidth:20},
@@ -554,10 +584,11 @@ function renderHistory(){
  ]},true);
  const chart2=histCharts.annual||(histCharts.annual=echarts.init(el('histAnnual')));
  const label={show:true,position:'inside',color:'#fff',fontSize:10,fontWeight:'bold',formatter:p=>p.value>0?String(p.value):''};
- chart2.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Planos Elaborados','Revisões gerais','Revisões pontuais']},grid:{left:40,right:12,top:60,bottom:40},xAxis:{type:'category',data:annualYears.map(String),axisLabel:{interval:2,hideOverlap:true}},yAxis:{type:'value',minInterval:1},series:[
+ chart2.setOption({animationDuration:300,tooltip:{trigger:'axis'},legend:{top:8,data:['Planos Elaborados','Revisões gerais','Revisões pontuais','Revisões sem tipo informado']},grid:{left:40,right:12,top:60,bottom:40},xAxis:{type:'category',data:annualYears.map(String),axisLabel:{interval:2,hideOverlap:true}},yAxis:{type:'value',minInterval:1},series:[
  {name:'Planos Elaborados',type:'bar',stack:'publicacoes',data:annualElaborations,itemStyle:{color:'#208cf0'},barMaxWidth:42,barMinWidth:12,label},
  {name:'Revisões gerais',type:'bar',stack:'publicacoes',data:annualGeneral,itemStyle:{color:'#172b99'},barMaxWidth:42,barMinWidth:12,label},
- {name:'Revisões pontuais',type:'bar',stack:'publicacoes',data:annualPunctual,itemStyle:{color:'#8b58cb'},barMaxWidth:42,barMinWidth:12,label}
+ {name:'Revisões pontuais',type:'bar',stack:'publicacoes',data:annualPunctual,itemStyle:{color:'#8b58cb'},barMaxWidth:42,barMinWidth:12,label},
+ {name:'Revisões sem tipo informado',type:'bar',stack:'publicacoes',data:annualUndefined,itemStyle:{color:'#a4aab6'},barMaxWidth:42,barMinWidth:12,label}
  ]},true);
  chart1.resize();chart2.resize();
 }
@@ -588,13 +619,13 @@ async function load(){try{
  const wb=XLSX.read(await response.arrayBuffer(),{type:'array',cellDates:false});
  data=excelToPanorama(wb);
  // Outras páginas permanecem em demonstração até validação das respectivas regras.
- initProcessData({processos:excelToProcesses(wb)});initHistoryData({demonstracao:true});
+ initProcessData({processos:excelToProcesses(wb)});initRealHistory(wb);
  populateSelect('uc',data.map(x=>x.nome));populateSelect('categoria',data.map(x=>x.categoria));populateSelect('bioma',data.flatMap(x=>x.biomas||[x.bioma]));populateSelect('gr',data.map(x=>x.gr));setupSearchableFilters();
- const t='Panorama e Elaboração / Revisão: dados reais do Excel · Outras páginas: demonstrativas';
+ const t='Panorama, Elaboração / Revisão e Histórico: dados reais do Excel · Outras páginas: demonstrativas';
  document.querySelectorAll('.demo-ribbon').forEach(e=>e.textContent=t);
  ['updateTop','updateHome'].forEach(id=>{if(el(id))el(id).textContent='Fonte: dados_pm.xlsx · Excel atualizado no GitHub'});
  document.querySelectorAll('#panorama .sub').forEach(e=>{if(e.textContent.includes('Centroides demonstrativos'))e.textContent='Coordenadas da base SharePoint • clique em um ponto para filtrar o painel'});
- guideContent.informacao[1]=guideContent.informacao[1].replace('Nesta versão, todos os registros são <b>fictícios</b> e servem apenas para validar layout e interatividade. A base institucional será incorporada posteriormente.','Panorama e Elaboração / Revisão utilizam dados reais do arquivo dados_pm.xlsx, obtidos das consultas do SharePoint. As demais páginas ainda podem conter informações demonstrativas.');
+ guideContent.informacao[1]=guideContent.informacao[1].replace('Nesta versão, todos os registros são <b>fictícios</b> e servem apenas para validar layout e interatividade. A base institucional será incorporada posteriormente.','Panorama, Elaboração / Revisão e Histórico utilizam dados reais do arquivo dados_pm.xlsx, obtidos das consultas do SharePoint. As demais páginas ainda podem conter informações demonstrativas.');
  if(currentPage==='panorama')renderAll();
  }catch(err){console.error(err);document.querySelectorAll('.demo-ribbon').forEach(e=>e.textContent='Erro ao carregar dados_pm.xlsx: '+err.message);alert('Falha na leitura do Excel: '+err.message+' Verifique se dados_pm.xlsx está na raiz do repositório e abra pelo GitHub Pages.')}}load();
 
