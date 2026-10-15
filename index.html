@@ -161,6 +161,13 @@
 .pr-biome-tag{display:inline-flex;align-items:center;gap:5px;margin:2px 8px 2px 0;white-space:nowrap}
 .pr-biome-tag i{width:8px;height:8px;flex:0 0 8px;border-radius:50%;display:inline-block}
 @media(max-width:720px){#processMap,#map.map.leaflet-container{height:430px!important}}
+
+/* Indicadores do grafico Producoes por ano: dois cards responsivos */
+.history-kpi.history-kpi-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch;margin:16px 0 18px}
+.history-kpi-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;min-width:0;padding:14px 16px;border-radius:10px;background:var(--bg,#f3f6fb);border:1px solid #e5ebf3}
+.history-kpi-card strong{line-height:1.1;font-size:28px}
+.history-kpi-card .sub{margin:0;line-height:1.35;font-size:11px}
+@media(max-width:480px){.history-kpi.history-kpi-cards{grid-template-columns:1fr}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
 <style>
@@ -299,7 +306,7 @@
 </div><div id="historyPage" class="hidden">
 
 <div class="history-charts-layout"><div class="panel"><h3>Acumulado Elaboração Planos de manejo X Criação de UCs</h3><p class="sub">Evolução acumulada da elaboração de Planos de Manejo e da criação das UCs</p><div id="histCumulative" class="history-plot"></div></div>
-<div class="panel"><h3>Produções por ano</h3><p class="sub">Elaborações (1ª versão) e revisões (versões posteriores) por UC e ano</p><div class="history-kpi" style="display:flex;flex-wrap:wrap;gap:18px 28px"><div style="display:flex;align-items:center;gap:12px"><strong id="histMean">—</strong><span class="sub" id="histMeanLabel">Média anual de elaborações e revisões desde 2007</span></div><div style="display:flex;align-items:center;gap:12px"><strong id="histTotal">—</strong><span class="sub" id="histTotalLabel">Total de elaborações e revisões</span></div></div><div id="histAnnual" class="history-plot short"></div></div>
+<div class="panel"><h3>Produções por ano</h3><p class="sub">Elaborações (1ª versão) e revisões (versões posteriores) por UC e ano</p><div class="history-kpi history-kpi-cards"><div class="history-kpi-card"><strong id="histMean">—</strong><span class="sub" id="histMeanLabel">Média anual de elaborações e revisões desde 2007</span></div><div class="history-kpi-card"><strong id="histTotal">—</strong><span class="sub" id="histTotalLabel">Total de elaborações e revisões</span></div></div><div id="histAnnual" class="history-plot short"></div></div>
 </div><div class="history-filters"><button class="reset" onclick="clearHistoryFilters()">↻ Limpar filtros</button>
 <div class="filter"><label for="histUC">Plano de Manejo</label><select id="histUC" onchange="renderHistory()"></select></div>
 <div class="filter"><label for="histCategoria">Categoria</label><select id="histCategoria" onchange="renderHistory()"></select></div>
@@ -670,7 +677,7 @@ function updateHistoryMean(chart){
  const count=rows.filter(r=>(historyDemandKind(r)==='elaboracao'&&includeElab)||(historyDemandKind(r)==='revisao'&&includeRev)).length;
  el('histMean').textContent=(denominator?count/denominator:0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
  el('histTotal').textContent=count.toLocaleString('pt-BR');
- const totalLabel=el('histTotalLabel');if(totalLabel)totalLabel.textContent='Total de '+(includeElab&&includeRev?'elaborações e revisões':includeElab?'elaborações':includeRev?'revisões':'publicações selecionadas');
+ const totalLabel=el('histTotalLabel');if(totalLabel)totalLabel.textContent='Total de '+(includeElab&&includeRev?'elaborações e revisões':includeElab?'elaborações':includeRev?'revisões':'publicações selecionadas')+(selectedYears?' nos '+denominator+' ano(s) selecionado(s)':' desde 2007');
  const label=el('histMeanLabel');if(label)label.textContent='Média anual de '+(includeElab&&includeRev?'elaborações e revisões':includeElab?'elaborações':includeRev?'revisões':'publicações selecionadas')+(selectedYears?' nos '+denominator+' ano(s) selecionado(s)':' desde 2007');
 }
 
